@@ -10,5 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 class Discriminator():
-    pass
+    def __init__(self, in_features):
+        pass
+
 
