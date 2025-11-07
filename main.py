@@ -27,7 +27,6 @@ transforms = transforms.Compose(
     ]
 )
 
-
 dataset = datasets.MNIST(root="dataset/", transform=transforms, download=True)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
@@ -35,8 +34,6 @@ opt_disc = optim.Adam(disc_model.parameters(), lr=1e-5, betas=(0.5, 0.999))
 opt_gen = optim.Adam(gen_model.parameters(), lr=1e-4, betas=(0.5, 0.999))
 
 criterion = nn.BCELoss()
-
-number = 0
 
 for epoch in range(num_epochs):
     for i, (real,_) in enumerate(loader): 
@@ -48,8 +45,6 @@ for epoch in range(num_epochs):
         
         #back prob for Discriminator
         fake_prediction = disc_model(fake_image.detach()).view(-1)
-         
-        
         real_prediction = disc_model(real_image).view(-1)
 
         disc_loss_fake = criterion(fake_prediction, torch.zeros_like(fake_prediction))
@@ -69,9 +64,9 @@ for epoch in range(num_epochs):
         opt_gen.step()
     
         if i == 0:
-            print(f"{number} | Gen Loss: {gen_loss:.4f} | Disc Loss: {disc_loss_fake:.4f} & {disc_loss_real:.4f}")
-            number += 1
-            if number == 5:
+            print(f"{epoch} | Gen Loss: {gen_loss:.4f} | Disc Loss: {disc_loss_fake:.4f} & {disc_loss_real:.4f}")
+
+            if epoch == 3:
         
                 fake_image = fake_image[0].view(64, 64).detach().cpu()
                 plt.imshow(fake_image, cmap='gray')
