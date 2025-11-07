@@ -1,6 +1,7 @@
 import torch
 import os
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
 from model import Discriminator, Generator
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -13,7 +14,21 @@ z_noise = torch.randn(1, 100, 1, 1).to(device)
 image = gen_model(z_noise).view(64, 64).detach().cpu()
 
 
-plt.imshow(image, cmap="gray")
+fig, ax = plt.subplots()
+plt.subplots_adjust(bottom=0.25)
+
+img_display = ax.imshow(image, cmap="gray")
+
+ax_z = plt.axes([0.25, 0.1, 0.65, 0.03])
+slider_z = Slider(ax_z, 'z[0]', valmin=-3.0, valmax=3.0, valinit=z_noise[0, 0, 0, 0].item())
+
+def update(val):
+    z_noise[0, 0, 0, 0] = torch.tensor(val, device=device)
+    with torch.no_grad():
+        new_image = gen_model(z_noise).view(64, 64).detach().cpu()
+    img_display.set_data(new_image)
+    fig.canvas.draw_idle()
+
+slider_z.on_changed(update)
+
 plt.show()
-
-
