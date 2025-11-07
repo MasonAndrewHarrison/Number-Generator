@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from model import Discriminator, Generator
+from torch.utils.tensorboard import SummaryWriter
 import os
 
 
@@ -14,7 +15,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 z_dimensions = 100
 image_dim = 64
-batch_size = 64
+batch_size = 640
 num_epochs = 100
 
 
@@ -40,12 +41,17 @@ transforms = transforms.Compose(
 
 dataset = datasets.MNIST(root="dataset/", transform=transforms, download=True)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+fixed_noise = torch.randn(32, z_dimensions, 1, 1).to(device)
 
 opt_disc = optim.Adam(disc_model.parameters(), lr=1e-5, betas=(0.5, 0.999))
 opt_gen = optim.Adam(gen_model.parameters(), lr=1e-4, betas=(0.5, 0.999))
 
+writer_real = SummaryWriter(f"logs/real")
+writer_fake = SummaryWriter(f"logs/fake")
+
 criterion = nn.BCELoss()
 
+step = 0
 for epoch in range(num_epochs):
     for i, (real,_) in enumerate(loader): 
 
@@ -73,6 +79,7 @@ for epoch in range(num_epochs):
         gen_model.zero_grad()
         gen_loss.backward()
         opt_gen.step()
+
     
         if i == 0:
             print(f"{epoch} | Gen Loss: {gen_loss:.4f} | Disc Loss: {disc_loss_fake:.4f} & {disc_loss_real:.4f}")
@@ -80,10 +87,17 @@ for epoch in range(num_epochs):
             torch.save(gen_model.state_dict(), "Generator_Weights.pth")
             torch.save(disc_model.state_dict(), "Discriminator_Weights.pth")
 
-            if epoch == 3:
+        if i % 100:
         
-                fake_image = fake_image[0].view(64, 64).detach().cpu()
-                plt.imshow(fake_image, cmap='gray')
-                plt.show()
+            with torch.no_grad():
+                fake = gen_model(fixed_noise)
+                # take out (up to) 32 examples
+                img_grid_real = torchvision.utils.make_grid(real_image[:32], normalize=True)
+                img_grid_fake = torchvision.utils.make_grid(fake_image[:32], normalize=True)
+
+                writer_real.add_image("Real", img_grid_real, global_step=step)
+                writer_fake.add_image("Fake", img_grid_fake, global_step=step)
+
+            step += 1
 
 

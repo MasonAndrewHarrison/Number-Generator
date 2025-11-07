@@ -20,7 +20,7 @@ plt.subplots_adjust(bottom=0.25)
 img_display = ax.imshow(image, cmap="gray")
 
 ax_z = plt.axes([0.25, 0.1, 0.65, 0.03])
-slider_z = Slider(ax_z, 'z[0]', valmin=-3.0, valmax=3.0, valinit=z_noise[0, 0, 0, 0].item())
+slider_z = Slider(ax_z, 'z[0]', valmin=-5.0, valmax=5.0, valinit=z_noise[0, 0, 0, 0].item())
 
 def update(val):
     z_noise[0, 0, 0, 0] = torch.tensor(val, device=device)
