@@ -6,7 +6,7 @@ import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
-from model import Discriminator, Generator
+from model import Discriminator, Generator, initialize_weights
 from torch.utils.tensorboard import SummaryWriter
 import os
 
@@ -16,7 +16,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 z_dimensions = 100
 image_dim = 64
 batch_size = 64
-num_epochs = 20
+num_epochs = 15
 
 
 disc_model = Discriminator(1, 64).to(device)
@@ -26,9 +26,15 @@ if os.path.exists("Generator_Weights.pth"):
     gen_model.load_state_dict(torch.load("Generator_Weights.pth", map_location=device))
     gen_model.to(device)
 
+else:
+    initialize_weights(gen_model)
+
 if os.path.exists("Discriminator_Weights.pth"):
     disc_model.load_state_dict(torch.load("Discriminator_Weights.pth", map_location=device))
     disc_model.to(device)
+
+else:
+    initialize_weights(disc_model)
 
 
 transforms = transforms.Compose(
