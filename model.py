@@ -40,10 +40,12 @@ class Generator(nn.Module):
     def __init__(self, z_dim, img_channel, features):
         super(Generator, self).__init__()
         self.gen = nn.Sequential(
+
             self._block(z_dim, features*16, 4, 1, 0),
             self._block(features*16, features*8, 4, 2, 1),
             self._block(features*8, features*4, 4, 2, 1),
             self._block(features*4, features*2, 4, 2, 1),
+            
             nn.ConvTranspose2d(
                 features * 2, img_channel, kernel_size=4, stride=2, padding=1
             ),

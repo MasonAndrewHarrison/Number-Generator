@@ -15,8 +15,8 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 z_dimensions = 100
 image_dim = 64
-batch_size = 640
-num_epochs = 100
+batch_size = 64
+num_epochs = 20
 
 
 disc_model = Discriminator(1, 64).to(device)
@@ -87,7 +87,7 @@ for epoch in range(num_epochs):
             torch.save(gen_model.state_dict(), "Generator_Weights.pth")
             torch.save(disc_model.state_dict(), "Discriminator_Weights.pth")
 
-        if i % 100:
+        if i % 500:
         
             with torch.no_grad():
                 fake = gen_model(fixed_noise)
