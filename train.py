@@ -16,7 +16,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 z_dimensions = 100
 image_dim = 64
 batch_size = 64
-num_epochs = 15
+num_epochs = 50
 
 
 disc_model = Discriminator(1, 64).to(device)
@@ -103,7 +103,7 @@ for epoch in range(num_epochs):
         
             with torch.no_grad():
                 fake_image = gen_model(fixed_noise)
-                # take out (up to) 32 examples
+
                 img_grid_real = torchvision.utils.make_grid(real_image[:32], normalize=True)
                 img_grid_fake = torchvision.utils.make_grid(fake_image[:32], normalize=True)
 
