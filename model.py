@@ -10,10 +10,12 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2),
 
             self._block(features, features*2, 4, 2, 1),
+            nn.Dropout(0.25),
             self._block(features*2, features*4, 4, 2, 1),
+            nn.Dropout(0.25),
             self._block(features*4, features*8, 4, 2, 1),
 
-            nn.Conv2d(features*8, 1, kernel_size=4, stride=2, padding=0),
+            nn.Conv2d(features*8, 1, kernel_size=4, stride=1, padding=0),
             nn.Sigmoid()
         )
 
@@ -63,7 +65,7 @@ class Generator(nn.Module):
                 bias=False
             ),
             nn.BatchNorm2d(out_channels),
-            nn.LeakyReLU(0.2)
+            nn.ReLU(True)
         )
     
     def forward(self, x):
@@ -72,7 +74,8 @@ class Generator(nn.Module):
 
 def initialize_weights(model):
     for m in model.modules():
-        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d, nn.BatchNorm2d)):
-            nn.init.normal_(m.weight.data, 0.0, 0.2)
-
-
+        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+            nn.init.normal_(m.weight.data, 0.0, 0.02) 
+        elif isinstance(m, nn.BatchNorm2d):
+            nn.init.normal_(m.weight.data, 1.0, 0.02) 
+            nn.init.constant_(m.bias.data, 0.0)

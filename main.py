@@ -43,6 +43,7 @@ def update(val, index):
 
 def on_button_click(event):
 
+    global z_noise
     z_noise = torch.randn(1, 100, 1, 1).to(device)
     
     for i in range(100):

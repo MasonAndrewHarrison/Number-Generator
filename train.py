@@ -41,7 +41,7 @@ transforms = transforms.Compose(
     [
         transforms.Resize(image_dim),
         transforms.ToTensor(),
-        transforms.Normalize((0.5), (0.5)),
+        transforms.Normalize((0.5,), (0.5,)),
     ]
 )
 
@@ -49,8 +49,8 @@ dataset = datasets.MNIST(root="dataset/", transform=transforms, download=True)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 fixed_noise = torch.randn(32, z_dimensions, 1, 1).to(device)
 
-opt_disc = optim.Adam(disc_model.parameters(), lr=1e-5, betas=(0.5, 0.999))
-opt_gen = optim.Adam(gen_model.parameters(), lr=1e-4, betas=(0.5, 0.999))
+opt_disc = optim.Adam(disc_model.parameters(), lr=1e-4, betas=(0.5, 0.999))
+opt_gen = optim.Adam(gen_model.parameters(), lr=3e-4, betas=(0.5, 0.999))
 
 writer_real = SummaryWriter(f"logs/real")
 writer_fake = SummaryWriter(f"logs/fake")
@@ -61,12 +61,13 @@ step = 0
 for epoch in range(num_epochs):
     for i, (real,_) in enumerate(loader): 
 
-        z_noise = torch.randn(batch_size, z_dimensions, 1, 1).to(device)
         real_image = real.to(device)
+        current_batch_size,_,_,_ = real_image.shape
 
+        z_noise = torch.randn(current_batch_size, z_dimensions, 1, 1).to(device)
         fake_image = gen_model(z_noise)
         
-        #back prob for Discriminator
+        #Back Prob for Discriminator
         fake_prediction = disc_model(fake_image.detach()).view(-1)
         real_prediction = disc_model(real_image).view(-1)
 
@@ -79,9 +80,9 @@ for epoch in range(num_epochs):
         opt_disc.step()
 
 
-        #back prob for Generator Model  
+        #Back Prob for Generator Model  
         gen_prediction = disc_model(fake_image).view(-1)
-        gen_loss = -torch.log(gen_prediction).mean()
+        gen_loss = criterion(gen_prediction, torch.ones_like(gen_prediction))
         gen_model.zero_grad()
         gen_loss.backward()
         opt_gen.step()
@@ -93,10 +94,15 @@ for epoch in range(num_epochs):
             torch.save(gen_model.state_dict(), "Generator_Weights.pth")
             torch.save(disc_model.state_dict(), "Discriminator_Weights.pth")
 
-        if i % 500:
+            if epoch % 5 ==0:
+                image = fake_image[0, 0, :, :].detach().cpu()
+                plt.imshow(image, cmap="gray")
+                plt.show()
+
+        if i % 500 == 0:
         
             with torch.no_grad():
-                fake = gen_model(fixed_noise)
+                fake_image = gen_model(fixed_noise)
                 # take out (up to) 32 examples
                 img_grid_real = torchvision.utils.make_grid(real_image[:32], normalize=True)
                 img_grid_fake = torchvision.utils.make_grid(fake_image[:32], normalize=True)
